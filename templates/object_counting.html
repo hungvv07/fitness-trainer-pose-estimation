@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm đối tượng - Fitness Trainer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/object_counting.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Đếm đối tượng</h1>
+            <p>Thử khả năng computer vision: đếm người, xe, vật dụng hàng ngày trong khung hình</p>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Live Camera</a>
+                <a href="/video_analysis" class="nav-link">Video Analysis</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+            </nav>
+        </header>
+
+        <div class="oc-layout">
+            <!-- Left: video + source controls -->
+            <section class="oc-video-panel">
+                <div class="oc-source-tabs" role="tablist">
+                    <button class="oc-tab active" data-source="camera" role="tab">Camera</button>
+                    <button class="oc-tab" data-source="file" role="tab">Video / Ảnh</button>
+                </div>
+
+                <div class="oc-file-row hidden" id="file-row">
+                    <input type="file" id="file-input" accept="video/*,image/*" hidden>
+                    <button class="btn ghost-btn" id="choose-file-btn">Chọn file</button>
+                    <span class="oc-file-name" id="file-name">Chưa chọn file (MP4, AVI, MOV, WebM, JPG, PNG)</span>
+                </div>
+
+                <div class="oc-stage" id="stage">
+                    <img id="feed" alt="Khung hình đã nhận diện" hidden>
+                    <div class="oc-placeholder" id="placeholder">
+                        <p id="placeholder-text">Bấm "Bắt đầu" để mở camera và nhận diện</p>
+                    </div>
+                    <div class="oc-stage-hint" id="stage-hint" hidden>Bấm vào khung hình để đặt vạch đếm</div>
+                </div>
+
+                <div class="oc-progress hidden" id="progress-wrap">
+                    <div class="oc-progress-bar"><div class="oc-progress-fill" id="progress-fill"></div></div>
+                    <span id="progress-text">0%</span>
+                </div>
+
+                <div class="oc-actions">
+                    <button class="btn primary-btn" id="start-btn">Bắt đầu</button>
+                    <button class="btn secondary-btn" id="stop-btn" disabled>Dừng</button>
+                    <button class="btn ghost-btn" id="reset-btn">Đặt lại bộ đếm</button>
+                </div>
+
+                <div class="oc-statusbar">
+                    <span class="oc-dot" id="state-dot"></span>
+                    <span id="state-text">Chưa chạy</span>
+                    <span class="oc-metrics" id="metrics"></span>
+                </div>
+            </section>
+
+            <!-- Right: toggles + results -->
+            <aside class="oc-side">
+                <div class="section">
+                    <h2>Đếm những gì</h2>
+                    <label class="oc-toggle">
+                        <input type="checkbox" id="tg-person" checked>
+                        <span class="oc-switch"></span>
+                        <span class="oc-swatch person"></span>
+                        <span>Người</span>
+                    </label>
+                    <label class="oc-toggle">
+                        <input type="checkbox" id="tg-vehicle" checked>
+                        <span class="oc-switch"></span>
+                        <span class="oc-swatch vehicle"></span>
+                        <span>Xe (xe máy, ô tô, xe đạp, buýt, tải)</span>
+                    </label>
+                    <label class="oc-toggle">
+                        <input type="checkbox" id="tg-everyday">
+                        <span class="oc-switch"></span>
+                        <span class="oc-swatch everyday"></span>
+                        <span>Vật dụng hàng ngày</span>
+                    </label>
+                    <label class="oc-toggle">
+                        <input type="checkbox" id="tg-line" checked>
+                        <span class="oc-switch"></span>
+                        <span class="oc-swatch line"></span>
+                        <span>Đếm di chuyển qua vạch</span>
+                    </label>
+
+                    <div class="oc-line-opts" id="line-opts">
+                        <div class="oc-seg" role="radiogroup">
+                            <label><input type="radio" name="line-orient" value="horizontal" checked><span>Vạch ngang</span></label>
+                            <label><input type="radio" name="line-orient" value="vertical"><span>Vạch dọc</span></label>
+                        </div>
+                        <label class="oc-range">
+                            <span>Vị trí vạch <b id="line-pos-val">50%</b></span>
+                            <input type="range" id="line-pos" min="5" max="95" value="50">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Cài đặt nhận diện</h2>
+                    <label class="oc-range">
+                        <span>Ngưỡng tin cậy <b id="conf-val">40%</b></span>
+                        <input type="range" id="conf" min="15" max="95" value="40">
+                    </label>
+                    <label class="oc-field">
+                        <span>Model</span>
+                        <select id="model-select">
+                            {% for m in models %}
+                            <option value="{{ m.key }}" {% if m.key == default_config.model %}selected{% endif %}>{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="oc-toggle compact">
+                        <input type="checkbox" id="tg-trails" checked>
+                        <span class="oc-switch"></span>
+                        <span>Hiện vệt di chuyển</span>
+                    </label>
+                    <p class="oc-note">Lần chạy đầu sẽ tự tải model (khoảng 7 đến 12MB) vào thư mục <code>models/</code>.</p>
+                </div>
+
+                <div class="section">
+                    <h2>Kết quả</h2>
+                    <div class="oc-cards" id="group-cards">
+                        <div class="oc-card person" data-group="person">
+                            <div class="oc-card-head">Người</div>
+                            <div class="oc-card-main"><span class="num" data-k="current">0</span><span class="unit">trong khung</span></div>
+                            <div class="oc-card-sub">Tổng đã thấy: <b data-k="unique">0</b></div>
+                            <div class="oc-card-sub oc-cross">Qua vạch: <b data-k="cross_fwd">0</b> <span class="dir-fwd">xuống</span>, <b data-k="cross_bwd">0</b> <span class="dir-bwd">lên</span></div>
+                        </div>
+                        <div class="oc-card vehicle" data-group="vehicle">
+                            <div class="oc-card-head">Xe</div>
+                            <div class="oc-card-main"><span class="num" data-k="current">0</span><span class="unit">trong khung</span></div>
+                            <div class="oc-card-sub">Tổng đã thấy: <b data-k="unique">0</b></div>
+                            <div class="oc-card-sub oc-cross">Qua vạch: <b data-k="cross_fwd">0</b> <span class="dir-fwd">xuống</span>, <b data-k="cross_bwd">0</b> <span class="dir-bwd">lên</span></div>
+                        </div>
+                        <div class="oc-card everyday" data-group="everyday">
+                            <div class="oc-card-head">Vật dụng</div>
+                            <div class="oc-card-main"><span class="num" data-k="current">0</span><span class="unit">trong khung</span></div>
+                            <div class="oc-card-sub">Tổng đã thấy: <b data-k="unique">0</b></div>
+                            <div class="oc-card-sub oc-cross">Qua vạch: <b data-k="cross_fwd">0</b> <span class="dir-fwd">xuống</span>, <b data-k="cross_bwd">0</b> <span class="dir-bwd">lên</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Chi tiết theo loại</h2>
+                    <table class="oc-table">
+                        <thead>
+                            <tr><th>Loại</th><th title="Đang có trong khung">Hiện tại</th><th title="Số đối tượng khác nhau đã thấy">Tổng</th><th class="col-cross" title="Số lần đi qua vạch (hai chiều)">Qua vạch</th></tr>
+                        </thead>
+                        <tbody id="label-rows">
+                            <tr class="empty"><td colspan="4">Chưa có dữ liệu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        window.OC_DEFAULT_CONFIG = {{ default_config | tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/object_counting.js') }}"></script>
+</body>
+</html>

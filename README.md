@@ -39,6 +39,14 @@ An AI-powered web application that tracks your exercises using computer vision a
 - 🥧 **Exercise Distribution** - See which exercises you do most
 - 📋 **Recent Workouts** - Quick view of latest sessions
 
+### Object Counting (CV test page, `/object_counting`)
+- **People, vehicles, everyday objects** - toggle each group on or off (MediaPipe EfficientDet, COCO classes)
+- **Count in frame and total seen** - a lightweight tracker gives each object an ID so it is counted once
+- **Line crossing** - horizontal or vertical counting line, counts both directions; click on the video to move the line
+- **Sources** - server camera, uploaded video, or a single image
+- **Two models** - EfficientDet-Lite0 (fast) or Lite2 (more accurate), downloaded to `models/` on first use
+- Note: COCO models are trained on eye-level photos, so top-down (drone / CCTV from above) footage gives poor results
+
 ### ⚙️ Extensible Architecture
 - 📝 **YAML-based Exercise Definitions** - Add new exercises without writing code!
 - 🔀 **Three Exercise Types** - Standard, Bilateral (left/right), Duration-based
@@ -360,6 +368,14 @@ fitness-trainer-pose-estimation/
 | `/api/video/status/<id>` | GET | Get video analysis status |
 | `/api/video/processed/<id>` | GET | Download processed video |
 | `/api/profile/update` | POST | Update user profile |
+| `/object_counting` | GET | Object counting page (people, vehicles, everyday objects) |
+| `/api/objects/upload` | POST | Upload a video or image for object counting |
+| `/api/objects/start` | POST | Start counting (`source`: `camera` or `file`) |
+| `/api/objects/stop` | POST | Stop counting and release the camera |
+| `/api/objects/config` | POST | Change toggles, line, confidence, model |
+| `/api/objects/reset` | POST | Reset counters |
+| `/api/objects/status` | GET | Counts per group and label, FPS, progress |
+| `/api/objects/frame` | GET | Latest annotated frame (JPEG) |
 
 ---
 

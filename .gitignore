@@ -26,3 +26,9 @@ Thumbs.db
 output/
 data/*.db
 *.sqlite3
+
+# Object detection models (downloaded on first use)
+models/
+
+# Uploaded files
+uploads/
