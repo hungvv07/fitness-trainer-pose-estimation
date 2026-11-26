@@ -6,6 +6,7 @@
     <title>Đếm đối tượng - Fitness Trainer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/object_counting.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -62,7 +63,7 @@
 
             <!-- Right: toggles + results -->
             <aside class="oc-side">
-                <div class="section">
+                <div class="section oc-sec-what">
                     <h2>Đếm những gì</h2>
                     <label class="oc-toggle">
                         <input type="checkbox" id="tg-person" checked>
@@ -101,7 +102,7 @@
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section oc-sec-settings">
                     <h2>Cài đặt nhận diện</h2>
                     <label class="oc-range">
                         <span>Ngưỡng tin cậy <b id="conf-val">40%</b></span>
@@ -123,7 +124,7 @@
                     <p class="oc-note">Lần chạy đầu sẽ tự tải model (khoảng 7 đến 12MB) vào thư mục <code>models/</code>.</p>
                 </div>
 
-                <div class="section">
+                <div class="section oc-sec-results">
                     <h2>Kết quả</h2>
                     <div class="oc-cards" id="group-cards">
                         <div class="oc-card person" data-group="person">
@@ -147,7 +148,7 @@
                     </div>
                 </div>
 
-                <div class="section">
+                <div class="section oc-sec-detail">
                     <h2>Chi tiết theo loại</h2>
                     <table class="oc-table">
                         <thead>

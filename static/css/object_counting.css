@@ -414,12 +414,71 @@
 
 .oc-table.no-line .col-cross { display: none; }
 
+@media (max-width: 900px) {
+    .oc-video-panel,
+    .oc-side {
+        flex: 1 1 100%;
+    }
+}
+
 @media (max-width: 640px) {
-    header h1 { font-size: 1.8rem; }
-    header p { font-size: 1rem; }
-    .container { padding: 16px; }
-    .nav-links { flex-wrap: wrap; gap: 8px; }
-    .oc-stage { min-height: 220px; }
-    .oc-actions .btn { min-width: 0; }
-    .oc-metrics { margin-left: 0; width: 100%; }
+    .oc-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    /* Lift the side sections into the main column so results sit right
+       under the video while it runs, and settings come after. */
+    .oc-side { display: contents; }
+    .oc-video-panel { order: 1; }
+    .oc-sec-results { order: 2; }
+    .oc-sec-what { order: 3; }
+    .oc-sec-detail { order: 4; }
+    .oc-sec-settings { order: 5; }
+
+    .oc-source-tabs { align-self: stretch; }
+    .oc-tab { flex: 1; }
+
+    .oc-stage { min-height: 200px; }
+    .oc-stage-hint { font-size: 0.72rem; right: 6px; bottom: 6px; }
+
+    .oc-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .oc-actions .btn {
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 0.95rem;
+    }
+
+    .oc-actions #reset-btn { grid-column: 1 / -1; }
+
+    .oc-statusbar { padding: 8px 12px; font-size: 0.85rem; }
+    .oc-metrics { margin-left: 0; width: 100%; font-size: 0.8rem; }
+
+    /* Compact result cards: big number on the left, details on the right */
+    .oc-cards { gap: 8px; }
+
+    .oc-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 14px;
+        align-items: center;
+        padding: 8px 12px;
+    }
+
+    .oc-card-head { grid-column: 1 / -1; }
+    .oc-card-main { grid-row: 2 / span 2; margin: 0; flex-direction: column; gap: 0; align-items: center; }
+    .oc-card-main .num { font-size: 1.7rem; line-height: 1.1; }
+    .oc-card-main .unit { font-size: 0.72rem; }
+    .oc-card-sub { font-size: 0.82rem; }
+
+    .oc-line-opts { margin-left: 0; }
+    .oc-toggle { padding: 10px 0; }
+
+    .oc-range input[type="range"] { height: 28px; }
 }
