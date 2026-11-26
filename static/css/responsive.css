@@ -1,0 +1,191 @@
+/* Shared mobile / tablet overrides. Loaded last on every page. */
+
+/* Navigation: never break a link over two lines, wrap whole links instead */
+.nav-links,
+.main-nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.nav-link {
+    white-space: nowrap;
+}
+
+/* Video analysis: the report panel is meant to stay hidden until a run ends */
+.report-section.hidden {
+    display: none;
+}
+
+img,
+video,
+canvas {
+    max-width: 100%;
+}
+
+/* ---------------------------------------------------------------- tablet */
+@media (max-width: 900px) {
+    /* Columns stack: stop flex-basis from turning into a fixed height */
+    .main-content > .video-container,
+    .main-content > .controls,
+    .main-content > .video-panel,
+    .main-content > .analysis-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .main-content {
+        flex-direction: column;
+    }
+
+    .charts-container > .chart-card {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+
+/* ----------------------------------------------------------------- phone */
+@media (max-width: 640px) {
+    .container {
+        padding: 16px;
+    }
+
+    header {
+        margin-bottom: 20px;
+    }
+
+    header h1 {
+        font-size: 1.7rem;
+        line-height: 1.25;
+    }
+
+    header p {
+        font-size: 0.95rem;
+    }
+
+    .nav-links,
+    .main-nav ul {
+        gap: 8px;
+        margin-top: 12px;
+        padding: 0;
+    }
+
+    .main-nav {
+        margin-top: 0;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 7px 12px;
+    }
+
+    /* Comfortable touch targets */
+    .btn {
+        min-height: 44px;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px; /* stops iOS from zooming on focus */
+    }
+
+    /* Home + video analysis: camera / upload area */
+    .video-container {
+        min-height: 240px;
+    }
+
+    .upload-area {
+        padding: 24px 16px;
+        margin: 12px;
+        width: calc(100% - 24px);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+    }
+
+    .placeholder-icon {
+        font-size: 3rem;
+    }
+
+    .exercise-options {
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    }
+
+    /* Video analysis: buttons in a 2 x 2 grid instead of one per row */
+    .control-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        flex-direction: row;
+    }
+
+    .control-buttons .btn {
+        min-width: 0;
+        width: auto;
+    }
+
+    .terminal-body {
+        max-height: 200px;
+    }
+
+    /* Dashboard: stat cards as a 2 x 2 grid */
+    .stats-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .stats-summary .stat-card {
+        padding: 14px 10px;
+    }
+
+    .stats-summary .stat-card h3 {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+
+    .stats-summary .stat-value {
+        font-size: 1.8rem;
+    }
+
+    .dashboard-content {
+        gap: 16px;
+    }
+
+    .chart-card,
+    .recent-workouts {
+        padding: 14px;
+    }
+
+    .recent-workouts {
+        overflow-x: auto;
+    }
+
+    .workout-table th,
+    .workout-table td {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+
+    /* Profile */
+    .profile-header {
+        padding: 20px 16px;
+        gap: 12px;
+    }
+
+    .profile-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .stat-box {
+        padding: 14px 10px;
+    }
+
+    /* No hover lift on touch screens */
+    .stat-card:hover,
+    .stat-box:hover {
+        transform: none;
+    }
+}

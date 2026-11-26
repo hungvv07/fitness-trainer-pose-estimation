@@ -1,0 +1,484 @@
+/* Object counting page */
+
+:root {
+    --oc-person: #3cc850;
+    --oc-vehicle: #ffa500;
+    --oc-everyday: #288ce6;
+    --oc-line: #ffe600;
+    --oc-border: #e2e6ea;
+    --oc-muted: #6b7280;
+}
+
+.hidden { display: none !important; }
+
+.oc-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.oc-video-panel {
+    flex: 2 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.oc-side {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Source tabs */
+.oc-source-tabs {
+    display: inline-flex;
+    background: #e8edf2;
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
+    align-self: flex-start;
+}
+
+.oc-tab {
+    border: none;
+    background: transparent;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.oc-tab.active {
+    background: white;
+    color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.oc-tab:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.oc-file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.oc-file-row .btn { flex: 0 0 auto; }
+
+.oc-file-name {
+    color: var(--oc-muted);
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+/* Stage */
+.oc-stage {
+    position: relative;
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.oc-stage img {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: crosshair;
+}
+
+.oc-placeholder {
+    color: #9aa3b5;
+    text-align: center;
+    padding: 30px;
+    font-size: 1.05rem;
+}
+
+.oc-stage-hint {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #f1f1f1;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+/* Progress */
+.oc-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.oc-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.oc-progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #3498db, #27ae60);
+    transition: width 0.3s;
+}
+
+#progress-text {
+    min-width: 48px;
+    font-weight: 600;
+    color: #555;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Actions */
+.oc-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.oc-actions .btn { min-width: 120px; }
+
+.ghost-btn {
+    background: white;
+    color: #374151;
+    border: 1px solid var(--oc-border) !important;
+}
+
+.ghost-btn:hover { background: #f3f4f6; }
+
+.oc-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: #374151;
+    background: white;
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.oc-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #9ca3af;
+    flex: 0 0 auto;
+}
+
+.oc-dot.running { background: #22c55e; }
+.oc-dot.loading { background: #f59e0b; }
+.oc-dot.error { background: #ef4444; }
+.oc-dot.finished { background: #3b82f6; }
+
+.oc-metrics {
+    margin-left: auto;
+    color: var(--oc-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Side sections (reuse look of video analysis) */
+.oc-side .section {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.oc-side .section h2 {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    color: #333;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+}
+
+/* Toggle switch */
+.oc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+}
+
+.oc-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+
+.oc-switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    background: #cbd2d9;
+    border-radius: 11px;
+    flex: 0 0 auto;
+    transition: background 0.2s;
+}
+
+.oc-switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.oc-toggle input:checked + .oc-switch { background: #3498db; }
+.oc-toggle input:checked + .oc-switch::after { transform: translateX(16px); }
+.oc-toggle input:focus-visible + .oc-switch { outline: 2px solid #3498db; outline-offset: 2px; }
+
+.oc-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex: 0 0 auto;
+}
+
+.oc-swatch.person { background: var(--oc-person); }
+.oc-swatch.vehicle { background: var(--oc-vehicle); }
+.oc-swatch.everyday { background: var(--oc-everyday); }
+.oc-swatch.line { background: var(--oc-line); border: 1px solid #c9b400; }
+
+.oc-line-opts {
+    margin: 4px 0 0 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.oc-line-opts.disabled { opacity: 0.45; pointer-events: none; }
+
+.oc-seg {
+    display: inline-flex;
+    border: 1px solid var(--oc-border);
+    border-radius: 6px;
+    overflow: hidden;
+    align-self: flex-start;
+}
+
+.oc-seg label { cursor: pointer; }
+.oc-seg input { position: absolute; opacity: 0; pointer-events: none; }
+
+.oc-seg span {
+    display: block;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.oc-seg input:checked + span { background: #3498db; color: white; }
+
+.oc-range, .oc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 10px;
+}
+
+.oc-range b { font-variant-numeric: tabular-nums; }
+
+.oc-range input[type="range"] { width: 100%; accent-color: #3498db; }
+
+.oc-field select {
+    padding: 8px 10px;
+    border: 1px solid var(--oc-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.oc-toggle.compact { padding-top: 2px; }
+
+.oc-note {
+    font-size: 0.8rem;
+    color: var(--oc-muted);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.oc-note code {
+    background: #f3f4f6;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+/* Result cards */
+.oc-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.oc-card {
+    border: 1px solid var(--oc-border);
+    border-left: 5px solid #9ca3af;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: opacity 0.2s;
+}
+
+.oc-card.person { border-left-color: var(--oc-person); }
+.oc-card.vehicle { border-left-color: var(--oc-vehicle); }
+.oc-card.everyday { border-left-color: var(--oc-everyday); }
+.oc-card.off { opacity: 0.4; }
+
+.oc-card-head {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.oc-card-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 2px 0;
+}
+
+.oc-card-main .num {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+}
+
+.oc-card-main .unit { color: var(--oc-muted); font-size: 0.85rem; }
+
+.oc-card-sub {
+    font-size: 0.85rem;
+    color: #4b5563;
+    font-variant-numeric: tabular-nums;
+}
+
+.oc-cards.no-line .oc-cross { display: none; }
+
+/* Table */
+.oc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.oc-table th, .oc-table td {
+    padding: 6px 4px;
+    text-align: right;
+    border-bottom: 1px solid #f0f2f4;
+}
+
+.oc-table th:first-child, .oc-table td:first-child { text-align: left; }
+
+.oc-table th {
+    color: var(--oc-muted);
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.oc-table tr.empty td {
+    text-align: center;
+    color: var(--oc-muted);
+    padding: 14px 0;
+}
+
+.oc-table .lbl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.oc-table.no-line .col-cross { display: none; }
+
+@media (max-width: 900px) {
+    .oc-video-panel,
+    .oc-side {
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .oc-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    /* Lift the side sections into the main column so results sit right
+       under the video while it runs, and settings come after. */
+    .oc-side { display: contents; }
+    .oc-video-panel { order: 1; }
+    .oc-sec-results { order: 2; }
+    .oc-sec-what { order: 3; }
+    .oc-sec-detail { order: 4; }
+    .oc-sec-settings { order: 5; }
+
+    .oc-source-tabs { align-self: stretch; }
+    .oc-tab { flex: 1; }
+
+    .oc-stage { min-height: 200px; }
+    .oc-stage-hint { font-size: 0.72rem; right: 6px; bottom: 6px; }
+
+    .oc-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .oc-actions .btn {
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 0.95rem;
+    }
+
+    .oc-actions #reset-btn { grid-column: 1 / -1; }
+
+    .oc-statusbar { padding: 8px 12px; font-size: 0.85rem; }
+    .oc-metrics { margin-left: 0; width: 100%; font-size: 0.8rem; }
+
+    /* Compact result cards: big number on the left, details on the right */
+    .oc-cards { gap: 8px; }
+
+    .oc-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 14px;
+        align-items: center;
+        padding: 8px 12px;
+    }
+
+    .oc-card-head { grid-column: 1 / -1; }
+    .oc-card-main { grid-row: 2 / span 2; margin: 0; flex-direction: column; gap: 0; align-items: center; }
+    .oc-card-main .num { font-size: 1.7rem; line-height: 1.1; }
+    .oc-card-main .unit { font-size: 0.72rem; }
+    .oc-card-sub { font-size: 0.82rem; }
+
+    .oc-line-opts { margin-left: 0; }
+    .oc-toggle { padding: 10px 0; }
+
+    .oc-range input[type="range"] { height: 28px; }
+}

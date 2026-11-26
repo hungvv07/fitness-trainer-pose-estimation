@@ -94,8 +94,17 @@ def initialize_camera():
     if camera is None:
         try:
             print("[INFO] Attempting to initialize camera...")
-            camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend for better compatibility
+            if os.name == 'nt':
+                camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Use DirectShow backend for better compatibility
+                if not camera.isOpened():
+                    camera.release()
+                    camera = cv2.VideoCapture(0)
+            else:
+                # DirectShow only exists on Windows
+                camera = cv2.VideoCapture(0)
             if not camera.isOpened():
+                camera.release()
+                camera = None
                 raise Exception("Camera could not be opened. Please check your device.")
             # Optimize camera settings
             camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -277,6 +286,8 @@ def dashboard():
 @app.route('/video_feed')
 def video_feed():
     """Video streaming route"""
+    # The object counting page may hold the camera; release it first
+    object_session.stop_if_camera()
     return Response(generate_frames(),
                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -755,6 +766,122 @@ def analyze_video_frame():
         'state': analysis.get('state', 'PROCESSING') if analysis else 'PROCESSING',
         'feedback': analysis.get('feedback', '') if analysis else ''
     })
+
+# ============================================
+# OBJECT COUNTING ROUTES (people, vehicles, everyday objects)
+# ============================================
+
+from object_detection.session import CountingSession
+from object_detection.detector import MODELS as OBJECT_MODELS
+from object_detection.counter import DEFAULT_CONFIG as OBJECT_DEFAULT_CONFIG
+
+object_session = CountingSession(open_camera=initialize_camera, release_camera=release_camera)
+
+OBJECT_VIDEO_EXTS = {'.mp4', '.avi', '.mov', '.mkv', '.webm', '.m4v'}
+OBJECT_IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+object_uploads = {}  # file_id -> {'path', 'source', 'name'}
+
+
+@app.route('/object_counting')
+def object_counting():
+    """Computer vision test page: count people, vehicles and everyday objects"""
+    models = [{'key': k, 'name': v['name']} for k, v in OBJECT_MODELS.items()]
+    return render_template('object_counting.html', models=models, default_config=OBJECT_DEFAULT_CONFIG)
+
+
+@app.route('/api/objects/upload', methods=['POST'])
+def object_upload():
+    """Upload a video or an image to run object counting on"""
+    file = request.files.get('file')
+    if file is None or file.filename == '':
+        return jsonify({'success': False, 'error': 'Chưa chọn file'})
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext in OBJECT_VIDEO_EXTS:
+        source = 'video'
+    elif ext in OBJECT_IMAGE_EXTS:
+        source = 'image'
+    else:
+        return jsonify({'success': False, 'error': f'Định dạng {ext or "không rõ"} không được hỗ trợ'})
+
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_VIDEO_SIZE_MB * 1024 * 1024:
+        return jsonify({'success': False, 'error': f'File quá lớn: tối đa {MAX_VIDEO_SIZE_MB}MB'})
+
+    # Keep only the latest upload on disk
+    object_session.stop()
+    for old in list(object_uploads.values()):
+        try:
+            if os.path.exists(old['path']):
+                os.remove(old['path'])
+        except OSError as e:
+            logger.warning(f"Could not delete old upload: {e}")
+    object_uploads.clear()
+
+    file_id = str(uuid.uuid4())
+    path = os.path.join(UPLOAD_FOLDER, f"objcount_{file_id}{ext}")
+    file.save(path)
+    object_uploads[file_id] = {'path': path, 'source': source, 'name': file.filename}
+    return jsonify({'success': True, 'file_id': file_id, 'source': source, 'name': file.filename})
+
+
+@app.route('/api/objects/start', methods=['POST'])
+def object_start():
+    data = request.get_json(silent=True) or {}
+    source = data.get('source', 'camera')
+    if isinstance(data.get('config'), dict):
+        object_session.update_config(data['config'])
+    try:
+        if source == 'camera':
+            object_session.start('camera', source_name='Camera')
+        else:
+            upload = object_uploads.get(data.get('file_id'))
+            if upload is None:
+                return jsonify({'success': False, 'error': 'File chưa được tải lên'})
+            object_session.start(upload['source'], upload['path'], source_name=upload['name'])
+    except Exception as e:
+        logger.error(f"Object counting start failed: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+    return jsonify({'success': True})
+
+
+@app.route('/api/objects/stop', methods=['POST'])
+def object_stop():
+    object_session.stop()
+    return jsonify({'success': True})
+
+
+@app.route('/api/objects/reset', methods=['POST'])
+def object_reset():
+    object_session.reset_counts()
+    return jsonify({'success': True})
+
+
+@app.route('/api/objects/config', methods=['POST'])
+def object_config():
+    data = request.get_json(silent=True) or {}
+    return jsonify({'success': True, 'config': object_session.update_config(data)})
+
+
+@app.route('/api/objects/status', methods=['GET'])
+def object_status():
+    return jsonify(object_session.status())
+
+
+@app.route('/api/objects/frame', methods=['GET'])
+def object_frame():
+    """Latest annotated frame as JPEG (204 when there is nothing newer)"""
+    after = request.args.get('after', type=int, default=-1)
+    seq, jpeg = object_session.latest_frame()
+    if jpeg is None or seq <= after:
+        return Response(status=204)
+    response = Response(jpeg, mimetype='image/jpeg')
+    response.headers['X-Frame-Seq'] = str(seq)
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
 
 if __name__ == '__main__':
     try:
